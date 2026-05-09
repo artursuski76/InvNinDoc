@@ -1,4 +1,5 @@
-FROM invoiceninja/invoiceninja:5.13.14
+# FROM invoiceninja/invoiceninja:5.13.14
+FROM invoiceninja/invoiceninja:5.13.22
 
 # Przełączamy na root, żeby móc wykonać zmiany systemowe
 USER root
