@@ -1,5 +1,4 @@
-<!-- custom-files/resources/views/pdf-designs -->
- <style id="style">
+<style id="style">
     @import url($font_url);
 
     :root {
@@ -9,7 +8,6 @@
     }
 
     html {
-        width: 210mm;
         height: 200mm;
     }
 
@@ -21,6 +19,7 @@
         zoom: 80%;
     }
 
+
     table tr td,
     table tr,
     th {
@@ -30,167 +29,136 @@
     @page {
         margin-left: $global_margin;
         margin-right: $global_margin;
-        margin-top: 5;
-        margin-bottom: 5;
+        margin-top: 0;
+        margin-bottom: 0;
         size: $page_size $page_layout;
     }
-
 
     p {
         margin: 0;
         padding: 0;
     }
 
-    #qr-bill {
-        width: 100% !important;
-    }
-
-    .header-container {
+    .header-wrapper {
         display: grid;
-        grid-template-columns: minmax(0, 1.5fr) auto minmax(0, 1fr);
+        grid-template-rows: 0.5fr;
+        grid-template-columns: auto auto auto auto auto;
+        grid-template-areas: "a b c d e";
+        grid-auto-columns: minmax(0, 1fr);
+        grid-auto-flow: column;
         align-items: start;
-        gap: 1rem;
-        width: 100%;
-    }
-
-    .company-logo-container {
-        justify-self: start;
-        align-self: start;
+        gap: 0px;
+        line-height: var(--line-height);
     }
 
     .company-logo {
         max-width: $company_logo_size;
+        float: right;
     }
 
-    .company-details-container {
-        justify-self: center;
-        align-self: start;
-        display: flex;
-        flex-direction: column;
-        line-height: var(--line-height);
-    }
-
-    .company-details-label {
-        font-weight: bold;
-        margin-right: 5px;
-    }
-
-    .party-label {
-        font-size: 0.75rem;
-        font-weight: bold;
-        text-transform: uppercase;
-        color: var(--primary-color);
-        letter-spacing: 0.05em;
-        margin-bottom: 0.25rem;
-    }
-
-    /* Etykieta Nabywca przed sekcją klienta */
-    #client-details::before {
-        content: "Nabywca";
-        display: block;
-        font-size: 0.75rem;
-        font-weight: bold;
-        text-transform: uppercase;
-        color: var(--primary-color);
-        letter-spacing: 0.05em;
-        margin-bottom: 0.25rem;
-    }
-
-    /* Prefiks NIP przy numerze VAT klienta w sekcji #client-details */
-    [data-ref="client_details-vat_number"]::before {
-        content: "NIP ";
-        font-weight: bold;
-    }
-
-    .company-details-row {
-        display: block;
-    }
-
-    #company-address {
+    .logo-wrapper {
+        grid-area: e;
         justify-self: end;
         align-self: start;
-        display: flex;
-        flex-direction: column;
-        line-height: var(--line-height);
-        text-align: right;
-    }
-
-    .entity-label {
-        margin-top: 2.5rem;
-        text-transform: uppercase;
-        padding-left: 1rem;
-        margin-bottom: 1rem;
-        font-weight: bold;
-        color: var(--primary-color);
-    }
-
-    .client-and-entity-wrapper {
-        padding-top: 1rem;
-        padding-bottom: 1rem;
-        display: grid;
-        grid-template-columns: 1.2fr 1fr 1.2fr;
-        align-items: start;
-        border-top: 1px solid #d8d8d8;
-        border-bottom: 1px solid #d8d8d8;
-        gap: 1rem;
     }
 
     #entity-details {
-        display: table;
-        text-align: left;
-        line-height: var(--line-height) !important;
         width: 100%;
-    }
-
-    #entity-details th {
-        font-weight: bold;
-        padding-right: 10px;
         white-space: nowrap;
-        text-align: left;
-    }
-
-    #entity-details td {
         text-align: right;
-        white-space: nowrap;
     }
 
-    /* Ukrycie powielonych pól "Faktura razem" i "Do zapłaty" w górnej sekcji */
-    [data-ref="totals_table-total-label"],
-    [data-ref="totals_table-total"],
-    [data-ref="totals_table-balance_due-label"],
-    [data-ref="totals_table-balance_due"],
-    [data-ref="totals_table-partial_due-label"],
-    [data-ref="totals_table-partial_due"] {
-        display: none !important;
+    #entity-details p {
+        margin-top: 5px;
     }
 
-    #client-details {
+    .header-wrapper #client-details,
+    .header-wrapper #company-details,
+    .header-wrapper #company-address {
         display: flex;
         flex-direction: column;
-        line-height: var(--line-height);
-        justify-self: center;
-        align-self: start;
+        line-height: var(--line-height) !important;
     }
 
-    #client-details> :first-child {
+    [data-ref="company_details-company.name"] {
+        color: var(--primary-color);
         font-weight: bold;
+    }
+
+    .header-wrapper #client-details>*:first-child {
+        font-weight: bold;
+    }
+
+    .header-wrapper .company-info-wrapper>* {
+        margin-bottom: 1rem;
+        grid-row-end: 4;
+    }
+
+    .entity-label-wrapper {
+        /* display: flex; */
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        width: 100%;
+        word-break: break-all;
+        box-sizing: border-box;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+
+    }
+
+    .entity-label {
+        display: flex;
+    }
+
+    .entity-label h4 {
+        margin-top: 0rem;
+        margin-bottom: 0rem;
+    }
+
+    .entity-details-wrapper {
+        flex-shrink: 0;
+    }
+
+    .entity-label-wrapper .entity-label>* {
+        font-size: 2.5rem;
+
+    }
+
+    .entity-label-wrapper .entity-label>*:first-child {
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .entity-label-wrapper .entity-label>*:last-child {
+        color: var(--primary-color);
+        font-style: italic;
+
     }
 
     #shipping-details {
         display: $show_shipping_address;
         flex-direction: column;
+        line-height: var(--line-height) !important;
+        margin-left: 1rem;
+    }
+
+    .entity-label-wrapper #entity-details>tr,
+    .entity-label-wrapper #entity-details th {
+        font-weight: normal;
         line-height: var(--line-height);
-        justify-self: end;
-        align-self: start;
         padding-left: 1rem;
     }
 
     [data-ref="table"] {
-        margin-top: 1rem;
         margin-bottom: 5px;
         min-width: 100%;
         table-layout: fixed;
         overflow-wrap: break-word;
+    }
+
+    [data-ref="table"]:not(:empty) {
+        border-top: 5px solid var(--primary-color);
+        margin-top: 1rem;
     }
 
     .task-time-details {
@@ -199,46 +167,48 @@
         color: grey;
     }
 
-    [data-ref="table"]>thead {
-        text-align: left;
-    }
 
-    [data-ref="table"]>thead>tr>th {
-        font-size: 1.1rem;
-        padding-bottom: 1.5rem;
-        padding-left: 1rem;
-    }
-
-    [data-ref="table"]>tbody>tr>td {
-        border-top: 1px solid #d8d8d8;
-        border-bottom: 1px solid #d8d8d8;
-        padding: 1rem 1rem;
-    }
-
-    th.right-radius {
-        padding-right: 1rem;
-        text-align: right;
-    }
-
-    td.right-radius {
-        text-align: right;
+    [data-ref='product_table-product.description-th'],
+    [data-ref='task_table-task.description-th'] {
+        width: 35% !important;
+        overflow-wrap: break-word;
     }
 
     [data-ref='product_table-product.item-td'] {
         color: var(--primary-color);
     }
 
+    [data-ref="table"]>thead {
+        text-align: left;
+    }
+
+    [data-ref="table"]>thead>tr>th {
+        font-size: 1.1rem;
+        padding: 1rem;
+    }
+
+    th.right-radius {
+        text-align: right !important;
+    }
+
+    td.right-radius {
+        text-align: right !important;
+    }
+
+    [data-ref="table"]>tbody>tr>td {
+        padding: 1rem;
+    }
+
     [data-ref="table"]>tbody>tr:nth-child(odd) {
-        background-color: #f5f5f5;
+        background-color: #e8e8e8;
     }
 
     #table-totals {
         margin-top: 0rem;
         display: grid;
         grid-template-columns: 2fr 1fr;
-        padding-top: 0rem;
-        padding-right: 1rem;
-        gap: 80px;
+        padding-top: 1rem;
+        margin-right: .75rem;
         page-break-inside: auto;
         overflow: visible !important;
     }
@@ -253,35 +223,35 @@
         margin-top: .75rem;
     }
 
-    #table-totals>.totals-table-right-side>*> :nth-child(2) {
-        text-align: right;
-    }
-
     #table-totals>.totals-table-right-side>*> :not([hidden])~ :not([hidden]) {
         --tw-space-y-reverse: 0;
         margin-top: calc(.75rem * calc(1 - var(--tw-space-y-reverse)));
         margin-bottom: calc(.75rem * var(--tw-space-y-reverse));
     }
 
+    #table-totals>.totals-table-right-side>*> :nth-child(2) {
+        text-align: right;
+    }
+
+    #table-totals>*>* {}
+
     #table-totals>*> :last-child {
         text-align: right;
-        padding-right: 0.5rem;
+        padding-right: 1rem;
+    }
+
+    [data-ref="total_table-footer"] {
+        padding-right: 0.8rem;
     }
 
     #footer {
-        margin-top: 10px;
+        margin-top: 30px;
     }
 
     /** Markdown-specific styles. **/
-    #product-table h3,
-    #task-table h3,
-    #delivery-note-table h3 {
+    [data-ref="table"] h3 {
         font-size: 1rem;
         margin-bottom: 0;
-    }
-
-    [data-ref="total_table-public_notes"] {
-        margin-top: 1rem;
     }
 
     [data-ref="statement-totals"] {
@@ -311,7 +281,7 @@
         bottom: 0;
     }
 
-    [data-ref='product_table-product.description-td'],
+    [data-element='product_table-product.description-td'],
     td {
         min-width: 100%;
         max-width: 300px;
@@ -333,8 +303,6 @@
         z-index: 200 !important;
         position: fixed;
         text-align: center;
-        float: right;
-
     }
 
     .is-paid {
@@ -349,6 +317,7 @@
         z-index: 200 !important;
         position: fixed;
         display: $show_paid_stamp;
+
     }
 
     .project-header {
@@ -363,6 +332,10 @@
     }
 
     .pqrcode {}
+
+    #qr-bill {
+        width: 100% !important;
+    }
 
     /** Useful snippets, uncomment to enable. **/
 
@@ -398,39 +371,37 @@
 
 <div id="body">
 <table style="min-width: 100%">
-    <thead>
-        <tr>
-            <td>
-                <div class="repeating-header-space">&nbsp;</div>
-            </td>
-        </tr>
-    </thead>
-    <tbody>
+<thead>
     <tr>
         <td>
-            <div class="header-container">
-                <div class="company-logo-container">
-                    <img class="company-logo" src="$company.logo" alt="$company.name logo">
-                </div>
-                <div class="company-details-container">
-                    <div class="party-label">Sprzedawca</div>
-                    <p><strong>$company.name</strong></p>
-                    <p>$company.address</p>
-                    <div class="company-details-row"><span class="company-details-label">$company.phone_label:</span>$company.phone</div>
-                    <div class="company-details-row"><span class="company-details-label">$company.email_label:</span>$company.email</div>
-                    <div class="company-details-row"><span class="company-details-label">NIP:</span>$company.vat_number</div>
-                    <div class="company-details-row"><span class="company-details-label">$company.id_number_label:</span>$company.id_number</div>
-                </div>
-                <div id="company-address"></div>
-            </div>
-            <p class="entity-label">$entity_label</p>
-            <div class="client-and-entity-wrapper">
-                <div class="entity-details-container">
-                    <table id="entity-details" cellspacing="0" cellpadding="0" dir="$dir"></table>
-                </div>
+            <div class="repeating-header-space">&nbsp;</div>
+        </td>
+    </tr>
+</thead>
+<tbody>
+    <tr>
+        <td>
+            <div class="header-wrapper">
                 <div id="client-details"></div>
                 <div id="vendor-details"></div>
                 <div id="shipping-details"></div>
+
+                <div class="company-info-wrapper">
+                    <div id="company-details"></div>
+                    <div id="company-address"></div>
+                </div>
+                <div class="logo-wrapper">
+                    <img class="company-logo" src="$company.logo" alt="$company.name logo" />
+                </div>
+            </div>
+            <div class="entity-label-wrapper">
+                <div class="entity-label">
+                    <h4>$entity_label</h4>
+                    <h4>#$entity_number</h4>
+                </div>
+                <div class="entity-details-wrapper">
+                    <table id="entity-details" cellspacing="0" dir="$dir"></table>
+                </div>
             </div>
             <table id="product-table" cellspacing="0" data-ref="table"></table>
             <table id="task-table" cellspacing="0" data-ref="table"></table>
@@ -443,11 +414,8 @@
             <div id="statement-credit-table-totals" data-ref="statement-totals"></div>
             <table id="statement-aging-table" cellspacing="0" data-ref="table"></table>
             <div id="statement-aging-table-totals" data-ref="statement-totals"></div>
-        </td>
-    </tr>
-    <tr>
-        <td>
             <div id="table-totals" cellspacing="0">$status_logo</div>
+        
         </td>
     </tr>
     <tr>
@@ -456,18 +424,18 @@
         </td>
     </tr>
     $verifactu_qr_code
-    </tbody>
-    <tfoot>
-        <tr>
-            <td>
-                <div class="repeating-footer-space">&nbsp;</div>
-            </td>
-        </tr>
-    </tfoot>
+</tbody>
+<tfoot>
+    <tr>
+        <td>
+            <div class="repeating-footer-space">&nbsp;</div>
+        </td>
+    </tr>
+</tfoot>
 </table>
-
 </div>
 
 <div class="repeating-footerx" id="footer">
     <p data-ref="total_table-footer">$entity_footer</p>
+
 </div>
