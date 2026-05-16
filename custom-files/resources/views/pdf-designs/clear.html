@@ -75,6 +75,33 @@
         margin-right: 5px;
     }
 
+    .party-label {
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        color: var(--primary-color);
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+    }
+
+    /* Etykieta Nabywca przed sekcją klienta */
+    #client-details::before {
+        content: "Nabywca";
+        display: block;
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        color: var(--primary-color);
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+    }
+
+    /* Prefiks NIP przy numerze VAT klienta w sekcji #client-details */
+    [data-ref="client_details-vat_number"]::before {
+        content: "NIP ";
+        font-weight: bold;
+    }
+
     .company-details-row {
         display: block;
     }
@@ -386,11 +413,12 @@
                     <img class="company-logo" src="$company.logo" alt="$company.name logo">
                 </div>
                 <div class="company-details-container">
+                    <div class="party-label">Sprzedawca</div>
                     <p><strong>$company.name</strong></p>
                     <p>$company.address</p>
                     <div class="company-details-row"><span class="company-details-label">$company.phone_label:</span>$company.phone</div>
                     <div class="company-details-row"><span class="company-details-label">$company.email_label:</span>$company.email</div>
-                    <div class="company-details-row"><span class="company-details-label">$company.vat_number_label:</span>$company.vat_number</div>
+                    <div class="company-details-row"><span class="company-details-label">NIP:</span>$company.vat_number</div>
                     <div class="company-details-row"><span class="company-details-label">$company.id_number_label:</span>$company.id_number</div>
                 </div>
                 <div id="company-address"></div>
