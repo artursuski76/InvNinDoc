@@ -1,0 +1,16 @@
+$c = \App\Models\Company::find(3);
+
+// 1. Czy firma na pewno ma nadpisania?
+$c->settings->translations->invoice ?? 'BRAK';
+
+// 2. Czy klienci tej firmy blokują dziedziczenie własnym kluczem translations?
+$c->clients->map(fn($cl) => [$cl->id => property_exists($cl->settings, 'translations') ? 'MA WLASNE - BLOKUJE' : 'ok']);
+
+// 3. Czy są grupy klientów z własnym translations?
+$c->group_settings->map(fn($g) => [$g->id => property_exists($g->settings, 'translations') ? 'MA WLASNE - BLOKUJE' : 'ok']);
+
+// 4. Czy firma używa szablonu niestandardowego i czy ma w nim "Faktura" na sztywno?
+\App\Models\Design::where('company_id', $c->id)->get()->map(fn($d) => [$d->name => str_contains(json_encode($d->design), 'Faktur') ? 'FAKTURA NA SZTYWNO W HTML' : 'ok']);
+
+// 5. Który design jest ustawiony jako domyślny dla faktur?
+$c->settings->invoice_design_id;
