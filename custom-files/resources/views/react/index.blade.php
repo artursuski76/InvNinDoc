@@ -1,34 +1,204 @@
 <!DOCTYPE html>
-<html data-report-errors="{{ $report_errors }}" data-rc="{{ $rc }}" data-user-agent="{{ $user_agent }}" data-login="{{ $login }}">
-<head>
-    <!-- Source: https://github.com/invoiceninja/invoiceninja -->
-    <!-- Version: {{ config('ninja.app_version') }} -->
-  <meta charset="UTF-8">
-  <title>{{ config('ninja.app_name') }}</title>
-  <meta name="google-signin-client_id" content="{{ config('services.google.client_id') }}">
+<html lang="en" class="h-full">
+  <head>
+    <title>Invoice Ninja</title>
 
-  @include('react.head')
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Leading free invoice generator for freelancers and small businesses. Invoice clients, accept payments, track expenses &amp; time billable-tasks online."
+    />
 
-</head>
+    <script>
+      if (
+        window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches
+      ) {
+        document.documentElement.style.backgroundColor = '#18181b';
+      }
+    </script>
 
-<body class="h-full">
-  <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="root"></div>
+    <link rel="stylesheet" href="/rsms/inter.css" />
 
-  <!-- Invoice Ninja PL: autouzupelnianie danych firmy po NIP -->
-  <script src="/js/nip-autofill.js?v=1" defer></script>
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/logo180.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <script type="module" crossorigin src="/bundle.BBBwNLjN.js"></script>
+    <link rel="stylesheet" crossorigin href="/index-CH3c91u5.css">
+  </head>
 
-</body>
+  <body class="h-full">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
 
-<!--
+    <!--
+      Invoice Ninja PL: autouzupelnianie danych firmy po numerze NIP
+      na formularzu klienta (/clients/create i /clients/{id}/edit)
+      na podstawie Bialej Listy MF, przez endpoint /nip-lookup/{nip}.
 
-If you are reading this, there is a fair change that the react application has not loaded for you. There are a couple of solutions:
+      Skrypt jest osadzony inline, poniewaz katalog public/ jest w runtime
+      wolumenem synchronizowanym przez entrypoint tylko przy zmianie wersji
+      aplikacji - osobny plik .js nie trafilby do wolumenu serwowanego
+      przez nginx.
 
-1. Download the release file from https://github.com/invoiceninja/invoiceninja and overwrite your current installation.
-2. Switch back to the Flutter application by editing the database, you can do this with the following SQL
+      Formularz jest aplikacja React, dlatego:
+      - wartosci pol ustawiamy natywnym setterem + zdarzeniem "input",
+        inaczej React nadpisalby zmiane swoim stanem,
+      - pola NIP i Nazwa nie maja atrybutu id, wiec znajdujemy je po
+        tekscie etykiety wiersza,
+      - kraj (react-select) wybieramy symulujac wpisanie tekstu i Enter.
+    -->
+    <script>
+    (function () {
+      'use strict';
 
-UPDATE accounts SET
-set_react_as_default_ap = 0;
+      var NIP_LABELS = ['nip', 'numer nip', 'numer vat', 'vat number'];
+      var NAME_LABELS = ['nazwa', 'name'];
 
--->
+      function isClientForm() {
+        return /^\/clients\/(create|[^/]+\/edit)/.test(window.location.pathname);
+      }
+
+      function setReactValue(input, value) {
+        if (!input) return;
+        var setter = Object.getOwnPropertyDescriptor(
+          window.HTMLInputElement.prototype,
+          'value'
+        ).set;
+        setter.call(input, value);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+
+      // Znajduje input po tekscie etykiety w tym samym wierszu formularza.
+      function findInputByLabel(labels) {
+        var inputs = document.querySelectorAll('input[type="text"]');
+        for (var i = 0; i < inputs.length; i++) {
+          var node = inputs[i].parentElement;
+          for (var depth = 0; node && depth < 6; depth++) {
+            var text = (node.innerText || '').split('\n')[0].trim().toLowerCase();
+            if (labels.indexOf(text) !== -1) return inputs[i];
+            node = node.parentElement;
+          }
+        }
+        return null;
+      }
+
+      // react-select z krajem szukamy w tej samej karcie co pole #postal_code.
+      function findCountryCombo() {
+        var anchor = document.getElementById('postal_code');
+        var node = anchor ? anchor.parentElement : null;
+        while (node && node !== document.body) {
+          var combo = node.querySelector('input[role="combobox"]');
+          if (combo) return combo;
+          node = node.parentElement;
+        }
+        return null;
+      }
+
+      function selectCountry(name) {
+        var combo = findCountryCombo();
+        if (!combo) return;
+        combo.focus();
+        setReactValue(combo, name);
+        setTimeout(function () {
+          combo.dispatchEvent(
+            new KeyboardEvent('keydown', {
+              key: 'Enter',
+              keyCode: 13,
+              which: 13,
+              bubbles: true,
+            })
+          );
+          combo.blur();
+        }, 400);
+      }
+
+      function showStatus(anchor, message, isError) {
+        var el = document.getElementById('nip-autofill-status');
+        if (!el) {
+          el = document.createElement('div');
+          el.id = 'nip-autofill-status';
+          el.style.cssText = 'font-size:0.75rem;margin-top:0.25rem;';
+          anchor.parentElement.appendChild(el);
+        }
+        el.textContent = message;
+        el.style.color = isError ? '#b91c1c' : '#15803d';
+      }
+
+      function fetchAndFill(nipInput) {
+        var nip = (nipInput.value || '').replace(/[^0-9]/g, '');
+        if (nip.length !== 10) {
+          showStatus(nipInput, 'Podaj 10-cyfrowy numer NIP', true);
+          return;
+        }
+
+        showStatus(nipInput, 'Pobieranie danych z Białej Listy…', false);
+
+        fetch('/nip-lookup/' + nip, { headers: { Accept: 'application/json' } })
+          .then(function (res) {
+            return res.json().then(function (data) {
+              if (!res.ok) throw new Error(data.error || 'Błąd pobierania danych');
+              return data;
+            });
+          })
+          .then(function (data) {
+            setReactValue(findInputByLabel(NAME_LABELS), data.name || '');
+            setReactValue(document.getElementById('address1'), data.street || '');
+            setReactValue(document.getElementById('address2'), data.number || '');
+            setReactValue(document.getElementById('city'), data.city || '');
+            setReactValue(
+              document.getElementById('postal_code'),
+              data.postal_code || ''
+            );
+            selectCountry('Polska');
+            showStatus(nipInput, 'Uzupełniono dane: ' + data.name, false);
+          })
+          .catch(function (err) {
+            showStatus(nipInput, err.message, true);
+          });
+      }
+
+      function enhance() {
+        if (!isClientForm()) return;
+
+        var nipInput = findInputByLabel(NIP_LABELS);
+        if (!nipInput || nipInput.dataset.nipAutofill) return;
+        nipInput.dataset.nipAutofill = '1';
+
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = 'Pobierz dane z GUS';
+        button.style.cssText =
+          'margin-top:0.5rem;padding:0.25rem 0.75rem;font-size:0.75rem;' +
+          'border:1px solid #09090b26;border-radius:0.375rem;cursor:pointer;' +
+          'background:#fff;color:#2a303d;';
+        button.addEventListener('click', function () {
+          fetchAndFill(nipInput);
+        });
+        nipInput.parentElement.appendChild(button);
+
+        nipInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            fetchAndFill(nipInput);
+          }
+        });
+      }
+
+      // SPA: formularz montuje sie dynamicznie, wiec obserwujemy zmiany DOM.
+      var scheduled = null;
+      new MutationObserver(function () {
+        if (scheduled) return;
+        scheduled = setTimeout(function () {
+          scheduled = null;
+          enhance();
+        }, 300);
+      }).observe(document.body, { childList: true, subtree: true });
+
+      enhance();
+    })();
+    </script>
+  </body>
 </html>
