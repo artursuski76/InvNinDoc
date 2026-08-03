@@ -71,6 +71,16 @@
         input.dispatchEvent(new Event('input', { bubbles: true }));
       }
 
+      // InputField w InvoiceNinja UI przekazuje wartosc do stanu formularza
+      // dopiero w onBlur (React mapuje go na natywne "focusout"), dlatego samo
+      // zdarzenie "input" wypelnia pole tylko wizualnie - bez focusout
+      // zapis wysyla stary (pusty) stan.
+      function commitValue(input, value) {
+        if (!input) return;
+        setReactValue(input, value);
+        input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+      }
+
       // Znajduje input po tekscie etykiety w tym samym wierszu formularza.
       function findInputByLabel(labels) {
         var inputs = document.querySelectorAll('input[type="text"]');
@@ -144,11 +154,11 @@
             });
           })
           .then(function (data) {
-            setReactValue(findInputByLabel(NAME_LABELS), data.name || '');
-            setReactValue(document.getElementById('address1'), data.street || '');
-            setReactValue(document.getElementById('address2'), data.number || '');
-            setReactValue(document.getElementById('city'), data.city || '');
-            setReactValue(
+            commitValue(findInputByLabel(NAME_LABELS), data.name || '');
+            commitValue(document.getElementById('address1'), data.street || '');
+            commitValue(document.getElementById('address2'), data.number || '');
+            commitValue(document.getElementById('city'), data.city || '');
+            commitValue(
               document.getElementById('postal_code'),
               data.postal_code || ''
             );
