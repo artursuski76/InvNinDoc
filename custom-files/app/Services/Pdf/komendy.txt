@@ -1,3 +1,5 @@
+php artisan tinker
+
 $c = \App\Models\Company::find(3);
 
 // 1. Czy firma na pewno ma nadpisania?
@@ -14,3 +16,24 @@ $c->group_settings->map(fn($g) => [$g->id => property_exists($g->settings, 'tran
 
 // 5. Który design jest ustawiony jako domyślny dla faktur?
 $c->settings->invoice_design_id;
+
+
+
+dla 360Biuro naprawa tlumaczenia
+
+$c = \App\Models\Company::find(3);
+$s = $c->settings;
+$s->translations = (object) [
+    'invoice' => 'Potwierdzenie sprzedaży',
+    'invoice_number' => 'Numer dokumentu',
+    'invoice_number_short' => 'Dokument #',
+    'invoice_total' => 'Razem',
+    'invoice_to' => 'Nabywca',
+    'invoice_subject' => 'Potwierdzenie sprzedaży :number od :account',
+    'invoice_message' => 'Aby wyświetlić potwierdzenie sprzedaży na kwotę :amount kliknij link poniżej.',
+    'view_invoice' => 'Zobacz dokument',
+];
+$c->settings = $s;
+$c->save();
+
+\App\Models\Company::all()->map(fn($co) => [$co->id => $co->settings->translations->invoice ?? 'BRAK']);
