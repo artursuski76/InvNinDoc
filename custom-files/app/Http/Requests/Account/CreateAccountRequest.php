@@ -191,9 +191,14 @@ class CreateAccountRequest extends Request
             return true;
         }
 
-        // self-hosted: rejestracja dozwolona tylko gdy instalacja ma ustawiony API_SECRET —
-        // middleware api_secret_check zweryfikował już nagłówek X-API-SECRET
-        return config('ninja.api_secret') !== '';
+        // self-hosted: rejestracja dozwolona tylko z poprawnym sekretem prowizjonowania
+        $expectedSecret = config('ninja.provisioning_secret');
+        $providedSecret = $this->header('X-Provisioning-Secret');
+
+        return is_string($expectedSecret)
+            && $expectedSecret !== ''
+            && is_string($providedSecret)
+            && hash_equals($expectedSecret, $providedSecret);
     }
 
     /**
